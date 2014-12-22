@@ -1,6 +1,10 @@
 import mysql.connector
 import config
 
+import csv
+import io
+import urllib.request
+
 class Datawriter:
     __current_locations = None
     
@@ -10,11 +14,8 @@ class Datawriter:
     def write_data(self):
         
         self.conn_settings = config.config
-
         self.cnx = mysql.connector.connect(**self.conn_settings)
-          
         self.cursor = self.cnx.cursor()
-
 
         self.query = ("INSERT INTO current_postitions"
                        "(type, number, longitude, latitude, unk, unk2, unk3) "
@@ -22,21 +23,22 @@ class Datawriter:
                        
         for n in self.__current_locations:
             self.add_data = tuple(n)
-            print(self.add_data)
             self.cursor.execute(self.query, self.add_data)
         
         self.cnx.commit()
         self.cursor.close()
         self.cnx.close()
-        
-        
-#~ url = "http://soiduplaan.tallinn.ee/gps.txt"
-#~ data = fetch_data.Datareader(url)
-#~ 
-#~ write = Datawriter(data.retrieve_data())
-#~ write.write_data()
-#~ for n in data.retrieve_data():
-    #~ add_data = tuple(n)
-    #~ print(add_data)
-    #~ cursor.execute(query, add_data)
-    
+
+class Datareader:
+    __url = None
+    __content = None
+
+    def __init__(self, url):
+        self.__url = url
+
+    def retrieve_data(self):
+        self.webpage = urllib.request.urlopen(self.__url)
+        self.dataread = csv.reader(io.TextIOWrapper(self.webpage))
+        self.__content = list(self.dataread)	
+        return(self.__content)
+
